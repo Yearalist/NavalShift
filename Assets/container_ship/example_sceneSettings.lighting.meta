@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 69ae3d332fb117442b80fc3fe1c8048c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4890085278179872738
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 2354
+  packageName: Container ship
+  packageVersion: 1.1
+  assetPath: Assets/Container_ship/example_sceneSettings.lighting
+  uploadId: 523792

@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: dc4caa5b9e4d7894db8a1d17e729e41e
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 2354
+  packageName: Container ship
+  packageVersion: 1.1
+  assetPath: Assets/Container_ship/Scripts/FreeflightCamera.cs
+  uploadId: 523792
