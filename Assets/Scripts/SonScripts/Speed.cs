@@ -36,7 +36,7 @@ public class Speed : MonoBehaviour
     {
         // Botun önüne raycast at
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, -Vector3.forward, out hit, raycastDistance, islandLayer))
+        if (Physics.Raycast(transform.position, -Vector3.right, out hit, raycastDistance, islandLayer))
         {
             // Eðer raycast bir adaya çarparsa hareketi durdur
             if (!stopMovement)
@@ -71,6 +71,6 @@ public class Speed : MonoBehaviour
     {
         // Raycast çizgilerini görselleþtir
         Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, transform.position + -Vector3.forward * raycastDistance);
+        Gizmos.DrawLine(transform.position, transform.position + -Vector3.right * raycastDistance);
     }
 }
