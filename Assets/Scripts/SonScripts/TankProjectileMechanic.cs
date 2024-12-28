@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class TankProjectileMechanic : MonoBehaviour
@@ -10,58 +9,100 @@ public class TankProjectileMechanic : MonoBehaviour
     public float firePower = 10f;
     public LineRenderer trajectoryLine;
     public int trajectoryResolution = 30;
+    public GameObject targetIndicatorPrefab; // Siyah daire için prefab
+
+    private GameObject targetIndicator; // Çizginin bittiği noktayı gösterecek nesne
+
+    private void Start()
+    {
+        // Hedef göstergesi oluştur
+        if (targetIndicatorPrefab != null)
+        {
+            targetIndicator = Instantiate(targetIndicatorPrefab, Vector3.zero, Quaternion.identity);
+            targetIndicator.SetActive(false); // Başta gizli
+        }
+    }
 
     private void Update()
     {
-        DrawTrajectory();
-
-        if (Input.GetButtonDown("Fire1")) 
+        if (Input.GetButtonDown("Fire1"))
         {
             FireProjectile();
         }
+
+        DrawTrajectory();
     }
 
     void FireProjectile()
     {
-        if (projectilePrefab != null && firePoint != null)
+        if (projectilePrefab == null || firePoint == null)
         {
-            GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-            Rigidbody rb = projectile.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = firePoint.forward * firePower; 
-            }
+            Debug.LogError("Projectile prefab or fire point is not set!");
+            return;
+        }
+
+        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        Rigidbody rb = projectile.GetComponent<Rigidbody>();
+
+        if (rb != null)
+        {
+            rb.velocity = firePoint.forward * firePower; // Mermiyi fırlat
         }
     }
 
     public void DrawTrajectory()
     {
-        if (trajectoryLine != null && firePoint != null)
+        if (trajectoryLine == null || firePoint == null)
+            return;
+
+        trajectoryLine.positionCount = trajectoryResolution;
+        Vector3[] points = new Vector3[trajectoryResolution];
+
+        Vector3 startPosition = firePoint.position;
+        Vector3 startVelocity = firePoint.forward * firePower;
+
+        bool targetFound = false; // Hedef noktayı bulduk mu?
+        Vector3 targetPosition = Vector3.zero;
+
+        for (int i = 0; i < trajectoryResolution; i++)
         {
-            //trajectoryResolution = Mathf.Clamp((int)(firePower * 2), 10, 100);
+            float time = (i / (float)(trajectoryResolution - 1)) * (firePower / Physics.gravity.magnitude);
+            points[i] = CalculateTrajectoryPoint(startPosition, startVelocity, time);
 
-            trajectoryLine.positionCount = trajectoryResolution;
-            Vector3[] points = new Vector3[trajectoryResolution];
-
-            // Her seferinde en güncel pozisyonu ve yönü al
-            Vector3 startPosition = firePoint.position;
-            Vector3 startVelocity = firePoint.forward * firePower;
-
-            for (int i = 0; i < trajectoryResolution; i++)
+            // Eğer y = 0.1 pozisyonuna ulaştıysak hedef noktayı belirle
+            if (!targetFound && points[i].y <= 0.1f)
             {
-                float time = i / (float)trajectoryResolution;
-                points[i] = CalculateTrajectoryPoint(startPosition, startVelocity, time);
+                targetPosition = points[i];
+                targetPosition.y = 0.1f; // Y koordinatını sabitliyoruz
+                targetFound = true;
             }
+        }
 
-            trajectoryLine.SetPositions(points);
+        trajectoryLine.SetPositions(points);
+
+        // Hedef göstergesini güncelle
+        if (targetIndicator != null)
+        {
+            targetIndicator.SetActive(targetFound);
+            if (targetFound)
+            {
+                targetIndicator.transform.position = targetPosition;
+            }
         }
     }
 
     Vector3 CalculateTrajectoryPoint(Vector3 startPosition, Vector3 startVelocity, float time)
     {
-        // Fizik Hareket denklemi: s = s0 + v0 * t + 0.5 * g * t^2
-        Vector3 gravity = Physics.gravity;
-        // İvmeli hareket için yer çekiminin etkisini kullandım
-        return startPosition + startVelocity * time + 0.5f * gravity * time * time;
+        return startPosition + startVelocity * time + 0.5f * Physics.gravity * time * time;
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Y ekseni 0.1'de bir daire çiz
+        if (targetIndicator != null && targetIndicator.activeSelf)
+        {
+            Gizmos.color = Color.black;
+            Gizmos.DrawSphere(targetIndicator.transform.position, 0.2f); // Daire boyutu
+        }
     }
 }
