@@ -1,100 +1,101 @@
 using Ditzelgames;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class WaterFloat : MonoBehaviour
 {
-    public float AirDrag = 1; // Hava sürtünmesi
-    public float WaterDrag = 10; // Su sürtünmesi
-    public bool AffectDirection = true; // Yönlendirme etkilenmeli mi?
-    public bool AttachToSurface = false; // Yüzeyde sabitlenmeli mi?
-    public Transform[] FloatPoints; // Yüzen noktalar (nesnenin suya temas eden noktalarý)
+    public float AirDrag = 1;
+    public float WaterDrag = 10;
+    public bool AffectDirection = true;
+    public bool AttachToSurface = false;
+    public Transform[] FloatPoints;
 
-    // Kullanýlan bileþenler
-    protected Rigidbody Rigidbody; // Nesneye baðlý Rigidbody bileþeni
-    protected Wave Waves; // Dalga bileþeni (su yüzeyi hareketleri)
+    protected Rigidbody Rigidbody;
+    protected Wave Waves;
 
-    // Su çizgisi
-    protected float WaterLine; // Su çizgisi yüksekliði
-    protected Vector3[] WaterLinePoints; // Su çizgisi noktalarý
+    protected float WaterLine;
+    protected Vector3[] WaterLinePoints;
 
-    // Yardýmcý vektörler
-    protected Vector3 smoothVectorRotation; // Yumuþak dönüþ vektörü
-    protected Vector3 TargetUp; // Hedef yukarý vektörü
-    protected Vector3 centerOffset; // Merkez kaymasý
+    protected Vector3 smoothVectorRotation;
+    protected Vector3 TargetUp;
+    protected Vector3 centerOffset;
 
-    // Nesnenin merkezi
+    private float updateInterval = 0.1f; // Y zme noktas  g ncelleme aral   
+    private float lastUpdateTime = 0f;
+
     public Vector3 Center { get { return transform.position + centerOffset; } }
 
-    // Baþlangýçta bir kez çalýþýr
     void Awake()
     {
-        // Bileþenleri al
-        Waves = FindObjectOfType<Wave>(); // Sahnedeki Wave bileþenini bul
-        Rigidbody = GetComponent<Rigidbody>(); // Rigidbody bileþenini al
-        Rigidbody.useGravity = false; // Yerçekimini devre dýþý býrak
+        Waves = FindObjectOfType<Wave>();
+        Rigidbody = GetComponent<Rigidbody>();
+        Rigidbody.useGravity = false;
 
-        // Merkezi hesapla
-        WaterLinePoints = new Vector3[FloatPoints.Length]; // Yüzme noktalarýný baþlat
+        WaterLinePoints = new Vector3[FloatPoints.Length];
         for (int i = 0; i < FloatPoints.Length; i++)
             WaterLinePoints[i] = FloatPoints[i].position;
-        centerOffset = PhysicsHelper.GetCenter(WaterLinePoints) - transform.position; // Merkez kaymasýný hesapla
+        centerOffset = PhysicsHelper.GetCenter(WaterLinePoints) - transform.position;
     }
 
-    // Her fizik güncellemesinde çalýþýr
     void FixedUpdate()
     {
-        // Varsayýlan su yüzeyi yüksekliði
-        var newWaterLine = 0f;
-        var pointUnderWater = false; // Su altýnda olan noktalar kontrolü
+        if (Time.time - lastUpdateTime >= updateInterval) // Belirli aral klarla g ncelle
+        {
+            UpdateWaterLinePoints();
+            lastUpdateTime = Time.time;
+        }
 
-        // Su çizgisi noktalarýný ve su çizgisini ayarla
+        UpdatePhysics();
+    }
+
+    private void UpdateWaterLinePoints()
+    {
+        var newWaterLine = 0f;
+        var pointUnderWater = false;
+
         for (int i = 0; i < FloatPoints.Length; i++)
         {
-            // Yüksekliði hesapla
             WaterLinePoints[i] = FloatPoints[i].position;
-            WaterLinePoints[i].y = Waves.GetHeight(FloatPoints[i].position); // Su yüzeyindeki yüksekliði al
-            newWaterLine += WaterLinePoints[i].y / FloatPoints.Length; // Ortalama su çizgisi yüksekliði
-            if (WaterLinePoints[i].y > FloatPoints[i].position.y) // Su altýnda olup olmadýðýný kontrol et
+            WaterLinePoints[i].y = Waves.GetHeight(FloatPoints[i].position); // Optimize edilmi  dalga y ksekli i
+
+            newWaterLine += WaterLinePoints[i].y / FloatPoints.Length;
+            if (WaterLinePoints[i].y > FloatPoints[i].position.y)
                 pointUnderWater = true;
         }
 
-        var waterLineDelta = newWaterLine - WaterLine; // Su çizgisindeki deðiþim
-        WaterLine = newWaterLine; // Yeni su çizgisini güncelle
-
-        // Yukarý vektörünü hesapla
+        WaterLine = newWaterLine;
         TargetUp = PhysicsHelper.GetNormal(WaterLinePoints);
 
-        // Yerçekimi hesapla
-        var gravity = Physics.gravity; // Varsayýlan yerçekimi
-        Rigidbody.linearDamping = AirDrag; // Hava sürtünmesi uygula
-        if (WaterLine > Center.y) // Eðer nesne suyun altýndaysa
+        if (pointUnderWater)
         {
-            Rigidbody.linearDamping = WaterDrag; // Su sürtünmesi uygula
-            if (AttachToSurface) // Eðer yüzeye sabitlenmeli ise
+            TargetUp = Vector3.SmoothDamp(transform.up, TargetUp, ref smoothVectorRotation, 0.2f);
+            Rigidbody.rotation = Quaternion.FromToRotation(transform.up, TargetUp) * Rigidbody.rotation;
+        }
+    }
+
+    private void UpdatePhysics()
+    {
+        var gravity = Physics.gravity;
+        Rigidbody.linearDamping = AirDrag;
+
+        if (WaterLine > Center.y)
+        {
+            Rigidbody.linearDamping = WaterDrag;
+
+            if (AttachToSurface)
             {
                 Rigidbody.position = new Vector3(Rigidbody.position.x, WaterLine - centerOffset.y, Rigidbody.position.z);
             }
             else
             {
-                gravity = AffectDirection ? TargetUp * -Physics.gravity.y : -Physics.gravity; // Yerçekimini yönlendir
-                transform.Translate(Vector3.up * waterLineDelta * 0.9f); // Su çizgisine doðru hareket et
+                gravity = AffectDirection ? TargetUp * -Physics.gravity.y : -Physics.gravity;
+                transform.Translate(Vector3.up * (WaterLine - Center.y) * 0.9f);
             }
         }
-        Rigidbody.AddForce(gravity * Mathf.Clamp(Mathf.Abs(WaterLine - Center.y), 0, 1)); // Yerçekimi kuvvetini uygula
 
-        // Dönüþ hesaplamasý
-        if (pointUnderWater) // Eðer herhangi bir nokta su altýndaysa
-        {
-            TargetUp = Vector3.SmoothDamp(transform.up, TargetUp, ref smoothVectorRotation, 0.2f); // Yumuþak dönüþ uygula
-            Rigidbody.rotation = Quaternion.FromToRotation(transform.up, TargetUp) * Rigidbody.rotation; // Dönüþü uygula
-        }
+        Rigidbody.AddForce(gravity * Mathf.Clamp(Mathf.Abs(WaterLine - Center.y), 0, 1));
     }
 
-    // Çizim iþlevi (Gizmos)
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
@@ -108,15 +109,14 @@ public class WaterFloat : MonoBehaviour
 
             if (Waves != null)
             {
-                Gizmos.color = Color.red; // Su çizgisi noktalarýný çiz
+                Gizmos.color = Color.red;
                 Gizmos.DrawCube(WaterLinePoints[i], Vector3.one * 0.3f);
             }
 
-            Gizmos.color = Color.green; // Yüzme noktalarýný çiz
+            Gizmos.color = Color.green;
             Gizmos.DrawSphere(FloatPoints[i].position, 0.1f);
         }
 
-        // Merkezi çiz
         if (Application.isPlaying)
         {
             Gizmos.color = Color.red;

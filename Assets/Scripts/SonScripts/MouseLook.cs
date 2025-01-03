@@ -1,44 +1,44 @@
-﻿
-using UnityEngine;
-
+﻿using UnityEngine;
 
 public class MouseLook : MonoBehaviour
+{
+    public float sensitivity = 3f; // Duyarlılığı biraz düşürdük
+    public float minVerticalAngle = -20f; // Daha dar bir dikey açı
+    public float maxVerticalAngle = 20f;
+
+    public Transform tankBody;
+    public Transform tankTurret;
+
+    private float rotationX = 0f;
+    private float rotationY = 0f;
+
+    public TankProjectileMechanic tankProjectileMechanic;
+
+    void Start()
     {
-    
-        public float sensitivity = 5f;
-        public float minVerticalAngle = -25f;
-        public float maxVerticalAngle = 25f;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
 
-        public Transform tankBody;
-        public Transform tankTurret;
+    void Update()
+    {
+        // Mouse hareketini al
+        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
-        private float rotationX = 0f;
-        private float rotationY = 0f;
+        // Gövdeyi sadece yatay döndür
+        rotationY += mouseX;
+        tankBody.rotation = Quaternion.Euler(0f, rotationY, 0f);
 
-        public TankProjectileMechanic tankProjectileMechanic;
+        // Kuleyi dikey döndür
+        rotationX -= mouseY;
+        rotationX = Mathf.Clamp(rotationX, minVerticalAngle, maxVerticalAngle);
+        tankTurret.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
 
-        void Start()
+        // Trajektory çizgiyi gerektiğinde güncelle
+        if (Input.GetMouseButton(0)) // Sadece sol tıklama sırasında çizgi güncellenir
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-
-        void Update()
-        {
-            // Mouse hareketini al
-            float mouseX = Input.GetAxis("Mouse X");
-            float mouseY = Input.GetAxis("Mouse Y");
-
-            // Tank gövdesini yatay döndür
-            rotationY += mouseX * sensitivity;
-            tankBody.rotation = Quaternion.Euler(0f, rotationY, 0f);
-
-            // Kuleyi dikey döndür
-            rotationX -= mouseY * sensitivity;
-            rotationX = Mathf.Clamp(rotationX, minVerticalAngle, maxVerticalAngle);
-            tankTurret.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
-
-            // Trajektory çizgiyi güncelle
-            tankProjectileMechanic.DrawTrajectory(); // Burada sürekli çağırıyoruz
+            tankProjectileMechanic.DrawTrajectory();
         }
     }
+}

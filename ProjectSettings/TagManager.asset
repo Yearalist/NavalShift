@@ -7,6 +7,7 @@ TagManager:
   - PinkZone
   - WhiteZone
   - Enemy
+  - Bullet
   layers:
   - Default
   - TransparentFX
@@ -24,7 +25,7 @@ TagManager:
   - EnemyProjectiles
   - FlyingEnemies
   - GroundEnemyTargettingProjectiles
-  - 
+  - Island
   - 
   - 
   - 
