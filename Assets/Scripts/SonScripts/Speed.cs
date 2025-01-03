@@ -9,7 +9,7 @@ public class Speed : MonoBehaviour
     public LayerMask islandLayer; // Adacýk için layer mask
 
     private float currentSpeed; // Þu anki hýz
-    private bool stopMovement = false;
+    private bool isStopped = false; // Hareket durdu mu?
     private float raycastCheckInterval = 0.1f; // Raycast kontrol sýklýðý (0.1 saniye)
     private float lastRaycastCheckTime = 0f; // Son raycast kontrol zamaný
 
@@ -21,23 +21,21 @@ public class Speed : MonoBehaviour
 
     void Update()
     {
-        if (!stopMovement) // Eðer hareket durdurulmadýysa
+        // Performans iyileþtirme: Raycast kontrolünü belirli aralýklarla yap
+        if (Time.time - lastRaycastCheckTime >= raycastCheckInterval)
+        {
+            lastRaycastCheckTime = Time.time;
+            CheckForIsland();
+        }
+
+        // Eðer durdurulmamýþsa hareket et
+        if (!isStopped)
         {
             // Hýzý artýr (maksimum hýzý aþma)
             currentSpeed = Mathf.Min(currentSpeed + acceleration * Time.deltaTime, maxSpeed);
 
             // Nesneyi X ekseninde hareket ettir
             transform.Translate(Vector3.right * currentSpeed * Time.deltaTime);
-        }
-
-        // Performans iyileþtirme: Raycast kontrolünü belirli aralýklarla yap
-        if (Time.time - lastRaycastCheckTime >= raycastCheckInterval)
-        {
-            lastRaycastCheckTime = Time.time;
-            if (!stopMovement) // Sadece hareket ederken raycast kontrolü yap
-            {
-                CheckForIsland();
-            }
         }
     }
 
@@ -48,18 +46,18 @@ public class Speed : MonoBehaviour
         if (Physics.Raycast(transform.position, Vector3.left, out hit, raycastDistance, islandLayer))
         {
             // Eðer raycast bir adaya çarparsa hareketi durdur
-            if (!stopMovement)
+            if (!isStopped)
             {
-                Debug.Log("Bot bulundu, hareket durduruldu.");
+                Debug.Log("Ada bulundu, hareket durduruldu.");
                 StopBot();
             }
         }
         else
         {
             // Eðer ada yoksa hareketi yeniden baþlat
-            if (stopMovement)
+            if (isStopped)
             {
-                Debug.Log("Bot yok, hareket devam ediyor.");
+                Debug.Log("Ada yok, hareket devam ediyor.");
                 ResumeBot();
             }
         }
@@ -67,13 +65,13 @@ public class Speed : MonoBehaviour
 
     public void StopBot()
     {
-        stopMovement = true; // Hareketi durdur
+        isStopped = true; // Hareketi durdur
         currentSpeed = 0f; // Hýzý sýfýrla
     }
 
     public void ResumeBot()
     {
-        stopMovement = false; // Hareketi yeniden baþlat
+        isStopped = false; // Hareketi yeniden baþlat
         currentSpeed = initialSpeed; // Hýzý baþlangýç hýzýna ayarla
     }
 

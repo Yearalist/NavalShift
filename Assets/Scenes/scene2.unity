@@ -1025,7 +1025,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 225413536}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 766ee633f0d44c5695e3eca31555e5a4, type: 3}
   m_Name: 
@@ -1081,11 +1081,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 225413536}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74cad328c7134544a96f52cc8f9b4bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 20a24a6bf8886b24e86fbdbf518cc711, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sensitivity: 2
+  tankBody: {fileID: 1952858517}
+  tankTurret: {fileID: 2087759486}
 --- !u!1 &293945999
 GameObject:
   m_ObjectHideFlags: 0
@@ -1997,7 +2000,7 @@ MonoBehaviour:
   healthBarTransform: {fileID: 0}
   reduceSpeed: 2
   downSpeed: 2
-  destroyDelay: 2
+  destroyDelay: 1
 --- !u!4 &794356215 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3617061158979682880, guid: 21c5e774199945e46abe39e6fc5ce1f8,
