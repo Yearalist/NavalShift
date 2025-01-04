@@ -35,7 +35,7 @@ public class Speed : MonoBehaviour
             currentSpeed = Mathf.Min(currentSpeed + acceleration * Time.deltaTime, maxSpeed);
 
             // Nesneyi X ekseninde hareket ettir
-            transform.Translate(Vector3.right * currentSpeed * Time.deltaTime);
+            transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime);
         }
     }
 
