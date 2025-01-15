@@ -6,6 +6,9 @@ public class Tower : MonoBehaviour
     public float fireRate = 1f; // Ateş etme hızı (saniye cinsinden)
     public GameObject projectilePrefab; // Mermi prefab'ı
     public Transform firePoint; // Ateş noktası
+    
+    public AudioSource audioSource; // Ses kaynağı
+    public AudioClip fireSound; // Ateş sesi
 
     public Transform currentTarget; // Mevcut hedef
     private float fireCooldown = 0f; // Ateş gecikmesi
@@ -19,15 +22,13 @@ public class Tower : MonoBehaviour
         }
 
         // Hedefi bul ve saldır
-        FindTarget();
+            FindTarget();
         if (currentTarget != null && fireCooldown <= 0)
         {
             Shoot(currentTarget);
             fireCooldown = fireRate; // Ateş hızını sıfırla
         }
-       
     }
-   
 
     void FindTarget()
     {
@@ -55,14 +56,17 @@ public class Tower : MonoBehaviour
         // Mermi oluştur
         GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
 
-        // Mermi yönü
-        Vector3 direction = (target.position - firePoint.position).normalized;
-
-        // Mermi hızını ayarla
-        Rigidbody rb = projectile.GetComponent<Rigidbody>();
-        if (rb != null)
+        // Mermi scriptine hedefi gönder
+        Mermi mermiScript = projectile.GetComponent<Mermi>();
+        if (mermiScript != null)
         {
-            rb.linearVelocity = direction * 10f; // Hızı 10 olarak belirledik
+            mermiScript.SetTarget(target);
+            
+        }
+        
+        if (audioSource != null && fireSound != null)
+        {
+            audioSource.PlayOneShot(fireSound);
         }
     }
 
