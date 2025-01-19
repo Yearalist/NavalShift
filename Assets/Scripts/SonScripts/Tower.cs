@@ -34,16 +34,25 @@ public class Tower : MonoBehaviour
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attackRange);
 
+        Transform priorityTarget = null;
+
         foreach (var hitCollider in hitColliders)
         {
-            if (hitCollider.CompareTag("Enemy"))
+            // Öncelikli olarak "BossEnemy" tag'ini kontrol et
+            if (hitCollider.CompareTag("BossEnemy"))
             {
-                currentTarget = hitCollider.transform;
-                return; // Bir hedef bulunca çık
+                priorityTarget = hitCollider.transform;
+                break; // Öncelikli hedef bulundu, diğerlerini kontrol etmeye gerek yok
+            }
+            // Eğer "BossEnemy" yoksa diğer düşmanlara geç
+            else if (hitCollider.CompareTag("Enemy"))
+            {
+                priorityTarget = hitCollider.transform;
             }
         }
 
-        currentTarget = null; // Eğer hedef yoksa sıfırla
+        // Hedefi belirle
+        currentTarget = priorityTarget;
     }
 
     void Shoot(Transform target)

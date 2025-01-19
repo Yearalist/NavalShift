@@ -12,6 +12,9 @@ public class TankProjectileMechanic : MonoBehaviour
     public GameObject targetIndicatorPrefab; // Siyah daire için prefab
 
     private GameObject targetIndicator; // Çizginin bittiği noktayı gösterecek nesne
+    public float detectionRadius = 0.5f; // Hedef tespiti için yarıçap
+    public float speed = 20f;
+    public float damage = 100f;
 
     private void Start()
     {
@@ -25,14 +28,17 @@ public class TankProjectileMechanic : MonoBehaviour
 
     private void Update()
     {
+        
         if (Input.GetButtonDown("Fire1"))
         {
             FireProjectile();
         }
-
         DrawTrajectory();
+        
+       
     }
-
+    
+    
     void FireProjectile()
     {
         if (projectilePrefab == null || firePoint == null)
@@ -96,9 +102,25 @@ public class TankProjectileMechanic : MonoBehaviour
         return startPosition + startVelocity * time + 0.5f * Physics.gravity * time * time;
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Çarpışma gerçekleştiğinde mermiyi yok et
+        Destroy(gameObject);  // Mermiyi yok et
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        // Eğer trigger kullanıyorsanız bu fonksiyon da kullanılabilir
+        Destroy(gameObject);  // Mermiyi yok et
+    }
+
     private void OnDrawGizmos()
     {
-        // Y ekseni 0.1'de bir daire çiz
+        // Çevredeki hedefleme yarıçapını çiz
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+
+        // Hedef göstergesi çiz
         if (targetIndicator != null && targetIndicator.activeSelf)
         {
             Gizmos.color = Color.black;

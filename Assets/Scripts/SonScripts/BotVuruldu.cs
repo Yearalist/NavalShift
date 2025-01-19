@@ -3,68 +3,80 @@ using UnityEngine.UI;
 
 public class BotVuruldu : MonoBehaviour
 {
-    [SerializeField] private float maxHealth = 3f; // Maksimum can
+     [SerializeField] private float maxHealth = 3f; // Maksimum can
     private float currentHealth; // Mevcut can
 
-    [SerializeField] private Image healthBarSprite; // Sağlık barı görseli
-    [SerializeField] private Transform healthBarTransform; // Sağlık barının transformu
-    [SerializeField] private float reduceSpeed = 2f; // Sağlık barının küçülme hızı
-    private float targetHealthRatio = 1f; // Sağlık oranı
-    private bool isMovingDown = false; // Aşağı hareket kontrolü
+    [SerializeField] private Image healthBarSprite; // SaÄŸlÄ±k barÄ±nÄ±n gÃ¶rseli
+    [SerializeField] private Transform healthBarTransform; // SaÄŸlÄ±k barÄ±nÄ±n transform'u
+    [SerializeField] private float healthBarLerpSpeed = 2f; // SaÄŸlÄ±k barÄ±nÄ±n geÃ§iÅŸ hÄ±zÄ±
+    private float targetHealthRatio = 1f; // Hedef saÄŸlÄ±k oranÄ±
+    private bool isMovingDown = false; // Botun aÅŸaÄŸÄ± hareket edip etmediÄŸi
 
-    public float downSpeed = 2f; // Aşağı hareket hızı
-    public float destroyDelay = 4f; // Bot yok olma gecikmesi
+    public float downSpeed = 2f; // AÅŸaÄŸÄ± hareket hÄ±zÄ±
+    public float destroyDelay = 2f; // Botun yok olma gecikmesi
 
     private void Start()
     {
-        currentHealth = maxHealth; // Başlangıçta maksimum can
-        UpdateHealthBar(); // Sağlık barını başlat
+        currentHealth = maxHealth; // BaÅŸlangÄ±Ã§ canÄ± ayarla
+        UpdateHealthBarInstant(); // SaÄŸlÄ±k barÄ±nÄ± baÅŸlat
     }
 
     private void Update()
     {
-        // Sadece sağlık barını kameraya doğru döndür
+        // SaÄŸlÄ±k barÄ±nÄ± kameraya dÃ¶ndÃ¼r
         if (healthBarTransform != null)
         {
             healthBarTransform.rotation = Quaternion.LookRotation(healthBarTransform.position - Camera.main.transform.position);
         }
 
-        // Sağlık barını yumuşakça güncelle
-        healthBarSprite.fillAmount = Mathf.MoveTowards(healthBarSprite.fillAmount, targetHealthRatio, reduceSpeed * Time.deltaTime);
+        // SaÄŸlÄ±k barÄ±nÄ±n doluluk oranÄ±nÄ± yumuÅŸakÃ§a gÃ¼ncelle
+        if (healthBarSprite != null)
+        {
+            healthBarSprite.fillAmount = Mathf.Lerp(healthBarSprite.fillAmount, targetHealthRatio, healthBarLerpSpeed * Time.deltaTime);
+        }
 
-        // Bot aşağı hareket etmeye başlamışsa hareket ettir
+        // EÄŸer bot aÅŸaÄŸÄ± hareket etmeye baÅŸladÄ±ysa, hareket ettir
         if (isMovingDown)
         {
             transform.Translate(Vector3.down * downSpeed * Time.deltaTime);
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    public void TakeDamage(float damage)
     {
-        if (collision.gameObject.CompareTag("Bullet"))
-        {
-            TakeDamage(1f); // Hasar uygula
-        }
-    }
+        currentHealth -= damage; // CanÄ± azalt
+        targetHealthRatio = Mathf.Clamp01(currentHealth / maxHealth); // SaÄŸlÄ±k oranÄ±nÄ± hesapla
+        UpdateHealthBarSmooth(); // SaÄŸlÄ±k barÄ±nÄ± gÃ¼ncelle
 
-    private void TakeDamage(float damage)
-    {
-        currentHealth -= damage; // Mevcut canı azalt
-        targetHealthRatio = currentHealth / maxHealth; // Sağlık oranını hesapla
-        UpdateHealthBar(); // Sağlık barını güncelle
-
-        // Eğer can sıfır veya altına düşerse, yok et
+        // EÄŸer can sÄ±fÄ±r veya daha dÃ¼ÅŸÃ¼kse, botu yok et
         if (currentHealth <= 0)
         {
-            isMovingDown = true; // Bot aşağı hareket etmeye başlasın
-            Invoke(nameof(DestroyBot), destroyDelay); // Belirli bir süre sonra yok et
+            StartDestructionSequence();
         }
     }
 
-    private void UpdateHealthBar()
+    private void UpdateHealthBarInstant()
     {
-        // Sağlık barının oranını güncelle
-        targetHealthRatio = currentHealth / maxHealth;
+        // SaÄŸlÄ±k barÄ±nÄ± anÄ±nda gÃ¼ncelle
+        if (healthBarSprite != null)
+        {
+            healthBarSprite.fillAmount = targetHealthRatio;
+        }
+    }
+
+    private void UpdateHealthBarSmooth()
+    {
+        // SaÄŸlÄ±k barÄ±nÄ± yumuÅŸakÃ§a gÃ¼ncelle
+        if (healthBarSprite != null)
+        {
+            targetHealthRatio = Mathf.Clamp01(currentHealth / maxHealth);
+        }
+    }
+
+    private void StartDestructionSequence()
+    {
+        isMovingDown = true; // Bot aÅŸaÄŸÄ± hareket etmeye baÅŸlasÄ±n
+        Invoke(nameof(DestroyBot), destroyDelay); // Yok etme iÅŸlemini gecikmeli baÅŸlat
     }
 
     private void DestroyBot()

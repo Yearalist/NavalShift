@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class ShellExplosion : MonoBehaviour
@@ -7,18 +8,18 @@ public class ShellExplosion : MonoBehaviour
     public AudioSource m_ExplosionAudio;
     public float m_MaxDamage = 100f;
     public float m_ExplosionForce = 1000f;
-    public float m_MaxLifeTime = 10f;
+    public float m_MaxLifeTime = 1f;
     public float m_ExplosionRadius = 5f;
 
     private void Start()
     {
-        // Eðer yok edilmediyse, mermiyi belli bir süre sonra yok et
-      //  Destroy(gameObject, m_MaxLifeTime);
+        // Eï¿½er yok edilmediyse, mermiyi belli bir sï¿½re sonra yok et
+       Destroy(gameObject, m_MaxLifeTime);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        // Patlama alanýndaki tüm collider'larý topla
+        // Patlama alanï¿½ndaki tï¿½m collider'larï¿½ topla
         Collider[] colliders = Physics.OverlapSphere(transform.position, m_ExplosionRadius, m_TankMask);
 
         for (int i = 0; i < colliders.Length; i++)
@@ -31,16 +32,16 @@ public class ShellExplosion : MonoBehaviour
             targetRigidbody.AddExplosionForce(m_ExplosionForce * 0.5f, transform.position, m_ExplosionRadius);
         }
 
-        // Parçacýklarý shell'den ayýr ve çalýþtýr
-      //  m_ExplosionParticles.transform.parent = null;
-      //  m_ExplosionParticles.Play();
+        // Parï¿½acï¿½klarï¿½ shell'den ayï¿½r ve ï¿½alï¿½ï¿½tï¿½r
+//        m_ExplosionParticles.transform.parent = null;
+       m_ExplosionParticles.Play();
 
-        // Ses efektini çal
-      //  m_ExplosionAudio.Play();
+        // Ses efektini ï¿½al
+        m_ExplosionAudio.Play();
 
-        // Parçacýklarý yok et
-       // ParticleSystem.MainModule mainModule = m_ExplosionParticles.main;
-       // Destroy(m_ExplosionParticles.gameObject, mainModule.duration);
+        // Parï¿½acï¿½klarï¿½ yok et
+        ParticleSystem.MainModule mainModule = m_ExplosionParticles.main;
+       Destroy(m_ExplosionParticles.gameObject, mainModule.duration);
 
         // Shell'i yok et
         Destroy(gameObject,10f);

@@ -3,6 +3,7 @@ using UnityEngine;
 public class Mermi : MonoBehaviour
 {
     public float speed = 20f; // Mermi hızı
+    public float damage = 1f; // Hasar miktarı
     private Transform target; // Hedef
 
     public void SetTarget(Transform newTarget)
@@ -14,7 +15,7 @@ public class Mermi : MonoBehaviour
     {
         if (target == null)
         {
-            Destroy(gameObject); // Hedef yoksa kendini yok et
+            Destroy(gameObject); // Hedef yoksa mermiyi yok et
             return;
         }
 
@@ -22,11 +23,15 @@ public class Mermi : MonoBehaviour
         Vector3 direction = (target.position - transform.position).normalized;
         transform.position += direction * speed * Time.deltaTime;
 
-        // Eğer hedefe çok yaklaştıysa yok et
+        // Eğer hedefe yaklaştıysa hasar ver ve mermiyi yok et
         if (Vector3.Distance(transform.position, target.position) < 0.2f)
         {
-            Destroy(target.gameObject); // Hedefi yok et
-            Destroy(gameObject); // Kendini yok et
+            BotVuruldu enemy = target.GetComponent<BotVuruldu>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(damage); // Hedefe hasar ver
+            }
+            Destroy(gameObject); // Mermiyi yok et
         }
     }
 }
