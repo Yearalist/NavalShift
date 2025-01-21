@@ -1,23 +1,22 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BotVuruldu : MonoBehaviour
+public class KuleVuruldu : MonoBehaviour
 {
-     [SerializeField] private float maxHealth = 3f; // Maksimum can
+    [SerializeField] private float maxHealth = 500f; // Maksimum can
     private float currentHealth; // Mevcut can
 
     [SerializeField] private Image healthBarSprite; // Sağlık barının görseli
     [SerializeField] private Transform healthBarTransform; // Sağlık barının transform'u
     [SerializeField] private float healthBarLerpSpeed = 2f; // Sağlık barının geçiş hızı
     private float targetHealthRatio = 1f; // Hedef sağlık oranı
-    private bool isMovingDown = false; // Botun aşağı hareket edip etmediği
 
-    public float downSpeed = 2f; // Aşağı hareket hızı
-    public float destroyDelay = 2f; // Botun yok olma gecikmesi
+    public float destroyDelay = 2f; // Kule yok olma gecikmesi
 
     private void Start()
     {
-        currentHealth = maxHealth; // Başlangıç canı ayarla
+        currentHealth = maxHealth; // Başlangıç canını maksimum cana eşitle
+        targetHealthRatio = 1f; // Hedef sağlık oranını %100 olarak başlat
         UpdateHealthBarInstant(); // Sağlık barını başlat
     }
 
@@ -34,23 +33,18 @@ public class BotVuruldu : MonoBehaviour
         {
             healthBarSprite.fillAmount = Mathf.Lerp(healthBarSprite.fillAmount, targetHealthRatio, healthBarLerpSpeed * Time.deltaTime);
         }
-
-        // Eğer bot aşağı hareket etmeye başladıysa, hareket ettir
-        if (isMovingDown)
-        {
-            transform.Translate(Vector3.down * downSpeed * Time.deltaTime);
-        }
     }
 
     public void TakeDamage(float damage)
     {
+        Debug.Log($"Kule hasar aldı: {damage}");
         currentHealth -= damage; // Canı azalt
         targetHealthRatio = Mathf.Clamp01(currentHealth / maxHealth); // Sağlık oranını hesapla
         UpdateHealthBarSmooth(); // Sağlık barını güncelle
 
-        // Eğer can sıfır veya daha düşükse, botu yok et
         if (currentHealth <= 0)
         {
+            Debug.Log("Kule yok ediliyor...");
             StartDestructionSequence();
         }
     }
@@ -60,7 +54,7 @@ public class BotVuruldu : MonoBehaviour
         // Sağlık barını anında güncelle
         if (healthBarSprite != null)
         {
-            healthBarSprite.fillAmount = targetHealthRatio;
+            healthBarSprite.fillAmount = Mathf.Clamp01(currentHealth / maxHealth);
         }
     }
 
@@ -75,12 +69,12 @@ public class BotVuruldu : MonoBehaviour
 
     private void StartDestructionSequence()
     {
-        isMovingDown = true; // Bot aşağı hareket etmeye başlasın
-        Invoke(nameof(Destroykule), destroyDelay); // Yok etme işlemini gecikmeli başlat
+        // Kuleyi yok etme işlemini başlat
+        Invoke(nameof(DestroyKule), destroyDelay);
     }
 
-    private void Destroykule()
+    private void DestroyKule()
     {
-        Destroy(gameObject); 
+        Destroy(gameObject); // Kuleyi yok et
     }
 }

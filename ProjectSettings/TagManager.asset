@@ -11,6 +11,10 @@ TagManager:
   - tag
   - BossEnemy
   - shell
+  - kule
+  - kasaba
+  - EnemyMermi
+  - Kule
   layers:
   - Default
   - TransparentFX

@@ -5,7 +5,7 @@ public class MainShellManager : MonoBehaviour
        public LayerMask m_TargetMask; // Patlamanın etkilediği katman
     public GameObject m_ExplosionEffect; // Patlama efektleri ve bileşenlerini içeren GameObject
     public float m_MaxDamage = 100f; // Maksimum hasar
-    public float m_ExplosionForce = 1000f; // Patlama kuvveti
+    public float m_ExplosionForce = 300f; // Patlama kuvveti
     public float m_MaxLifeTime = 10f; // Merminin yaşam süresi
     public float m_ExplosionRadius = 5f;
 
@@ -43,6 +43,8 @@ public class MainShellManager : MonoBehaviour
             Debug.Log("No BotVuruldu found on: " + colliders[i].name);
         }
     }
+    
+    
 
     // Patlama efektini tetikle
     if (m_ExplosionEffect != null)

@@ -270,8 +270,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 131072
   m_ExplosionEffect: {fileID: 0}
-  m_MaxDamage: 10
-  m_ExplosionForce: 1000
+  m_MaxDamage: 35
+  m_ExplosionForce: 200
   m_MaxLifeTime: 1.9
   m_ExplosionRadius: 5
 --- !u!82 &4514772920608359233

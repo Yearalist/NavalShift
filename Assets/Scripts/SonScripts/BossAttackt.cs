@@ -1,36 +1,36 @@
+using System;
 using UnityEngine;
 
-public class Tower : MonoBehaviour
+public class BossAttackt : MonoBehaviour
 {
-    public float attackRange = 10f; // Kule menzili
-    public float fireRate = 1f; // Ateş etme hızı (saniye cinsinden)
-    public GameObject projectilePrefab; // Mermi prefab'ı
-    public Transform firePoint; // Ateş noktası
-    
+    public float attackRange = 10f;
+    public float fireRate = 1f;
+    public GameObject projecttilePrefab;
+    public Transform firePoint;
     public AudioSource audioSource; // Ses kaynağı
     public AudioClip fireSound; // Ateş sesi
 
     public Transform currentTarget; // Mevcut hedef
     private float fireCooldown = 0f; // Ateş gecikmesi
 
-    void Update()
+    private void Update()
     {
-        // Ateş gecikmesini azalt
+        // Ateş gecikmesi azaltılıyor
         if (fireCooldown > 0)
         {
             fireCooldown -= Time.deltaTime;
         }
 
-        // Hedefi bul ve saldır
-            FindTarget();
+        // Hedef seçimi ve ateş etme
+        FingTarget();
         if (currentTarget != null && fireCooldown <= 0)
         {
             Shoot(currentTarget);
-            fireCooldown = fireRate; // Ateş hızını sıfırla
+            fireCooldown = fireRate; // Ateş gecikmesi sıfırlanıyor
         }
     }
 
-    void FindTarget()
+    void FingTarget()
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attackRange);
 
@@ -38,20 +38,17 @@ public class Tower : MonoBehaviour
 
         foreach (var hitCollider in hitColliders)
         {
-            // Öncelikli olarak "BossEnemy" tag'ini kontrol et
-            if (hitCollider.CompareTag("BossEnemy"))
+            if (hitCollider.CompareTag("Kule"))
             {
                 priorityTarget = hitCollider.transform;
-                break; // Öncelikli hedef bulundu, diğerlerini kontrol etmeye gerek yok
+                break;
             }
-            // Eğer "BossEnemy" yoksa diğer düşmanlara geç
-            else if (hitCollider.CompareTag("Enemy"))
+            else if (hitCollider.CompareTag("kasaba"))
             {
                 priorityTarget = hitCollider.transform;
             }
         }
 
-        // Hedefi belirle
         currentTarget = priorityTarget;
     }
 
@@ -59,31 +56,29 @@ public class Tower : MonoBehaviour
     {
         if (target == null)
         {
-            return; // Hedef yoksa çık
+            return;
         }
 
-        // Mermi oluştur
-        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
+        GameObject projectile = Instantiate(projecttilePrefab, firePoint.position + firePoint.forward * 0.5f, Quaternion.identity);
 
-        // Mermi scriptine hedefi gönder
-        Mermi mermiScript = projectile.GetComponent<Mermi>();
-        if (mermiScript != null)
+
+        EnemyMermi enemyMermiScript = projectile.GetComponent<EnemyMermi>();
+        if (enemyMermiScript != null)
         {
-            mermiScript.SetTarget(target);
-            
+            enemyMermiScript.SetTarget(target);
         }
-        
+
         if (audioSource != null && fireSound != null)
         {
             audioSource.PlayOneShot(fireSound);
         }
     }
 
-    // Kule menzilini görselleştirmek için
+    // Moved OnDrawGizmosSelected outside the Shoot method
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
+    
 }
- 
